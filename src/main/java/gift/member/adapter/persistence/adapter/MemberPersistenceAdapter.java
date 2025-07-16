@@ -14,29 +14,27 @@ import java.util.stream.Collectors;
 public class MemberPersistenceAdapter implements MemberRepository {
 
     private final MemberJpaRepository memberJpaRepository;
-    private final MemberPersistenceMapper memberMapper;
 
-    public MemberPersistenceAdapter(MemberJpaRepository memberJpaRepository, MemberPersistenceMapper memberMapper) {
+    public MemberPersistenceAdapter(MemberJpaRepository memberJpaRepository) {
         this.memberJpaRepository = memberJpaRepository;
-        this.memberMapper = memberMapper;
     }
 
     @Override
     public Member save(Member member) {
-        var entity = memberJpaRepository.save(memberMapper.toEntity(member));
-        return memberMapper.toDomain(entity);
+        var entity = memberJpaRepository.save(MemberPersistenceMapper.toEntity(member));
+        return MemberPersistenceMapper.toDomain(entity);
     }
 
     @Override
     public Optional<Member> findByEmail(String email) {
         return memberJpaRepository.findByEmail(email)
-                .map(memberMapper::toDomain);
+                .map(MemberPersistenceMapper::toDomain);
     }
 
     @Override
     public Optional<Member> findById(Long id) {
         return memberJpaRepository.findById(id)
-                .map(memberMapper::toDomain);
+                .map(MemberPersistenceMapper::toDomain);
     }
 
     @Override
@@ -52,7 +50,7 @@ public class MemberPersistenceAdapter implements MemberRepository {
     @Override
     public List<Member> findAll() {
         return memberJpaRepository.findAll().stream()
-                .map(memberMapper::toDomain)
+                .map(MemberPersistenceMapper::toDomain)
                 .collect(Collectors.toList());
     }
 

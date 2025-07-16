@@ -1,6 +1,6 @@
 package gift.product.adapter.web;
 
-import gift.product.adapter.web.mapper.ProductMapper;
+import gift.product.adapter.web.mapper.ProductWebMapper;
 import gift.product.application.port.in.ProductUseCase;
 import gift.product.application.port.in.dto.CreateProductRequest;
 import gift.product.application.port.in.dto.ProductResponse;
@@ -18,24 +18,22 @@ import java.net.URI;
 @RequestMapping("/api/products")
 public class ProductController {
     private final ProductUseCase productUseCase;
-    private final ProductMapper productMapper;
 
-    public ProductController(ProductUseCase productUseCase, ProductMapper productMapper) {
+    public ProductController(ProductUseCase productUseCase) {
         this.productUseCase = productUseCase;
-        this.productMapper = productMapper;
     }
 
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProducts(Pageable pageable) {
         Page<Product> productPage = productUseCase.getProducts(pageable);
-        Page<ProductResponse> responsePage = productPage.map(productMapper::toResponse);
+        Page<ProductResponse> responsePage = productPage.map(ProductWebMapper::toResponse);
         return ResponseEntity.ok(responsePage);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable("id") Long id) {
         Product product = productUseCase.getProduct(id);
-        return ResponseEntity.ok(productMapper.toResponse(product));
+        return ResponseEntity.ok(ProductWebMapper.toResponse(product));
     }
 
     @PostMapping

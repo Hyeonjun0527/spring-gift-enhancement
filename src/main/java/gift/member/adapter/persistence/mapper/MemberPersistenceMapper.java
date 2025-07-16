@@ -2,12 +2,10 @@ package gift.member.adapter.persistence.mapper;
 
 import gift.member.adapter.persistence.entity.MemberEntity;
 import gift.member.domain.model.Member;
-import org.springframework.stereotype.Component;
 
-@Component
 public class MemberPersistenceMapper {
 
-    public Member toDomain(MemberEntity entity) {
+    public static Member toDomain(MemberEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -20,7 +18,7 @@ public class MemberPersistenceMapper {
         );
     }
 
-    public MemberEntity toEntity(Member domain) {
+    public static MemberEntity toEntity(Member domain) {
         if (domain == null) {
             return null;
         }
