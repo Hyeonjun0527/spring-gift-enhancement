@@ -104,3 +104,22 @@ DELETE /api/products/{productId}
 - 사용자 정보는 요청 헤더의 Authorization 필드를 사용한다.
    - 예시: `Authorization: Bearer <token>`
 - HandlerMethodArgumentResolver를 활용해 컨트롤러 메서드에 로그인 회원 객체를 주입한다.
+
+# spring-gift-enhancement
+
+## 1단계 - 엔티티 매핑(JPA 적용)
+
+현재 도메인이 객체지향적이지 않았음. 그걸 깨닫고 리팩토링하기
+JdbcClient를 사용하는 방식에서 JPA를 사용하는 것으로 리팩토링을 해보며, 객체지향적으로 도메인을 매핑한다.
+객체의 참조와 테이블의 외래 키를 매핑해서 객체에서는 참조를 사용하고 테이블에서는 외래 키를 사용할 수 있도록 한다.
+@DataJpaTest를 사용하여 학습 테스트를 해 본다.
+0. 의존성 추가 및 개발 컨벤션 수립(폴더 구조 및 클래스 명 규칙)
+
+1. Member 엔티티 매핑
+   - 회원 엔티티를 정의하고, JPA 어노테이션을 사용하여 매핑
+2. Product 엔티티 매핑
+   - 상품 엔티티를 정의하고, JPA 어노테이션을 사용하여 매핑
+3. Wishlist 엔티티 매핑
+   - 위시리스트 엔티티를 정의하고, JPA 어노테이션을 사용하여 매핑
+4. @DataJpaTest를 사용한 학습 테스트
+   - JPA를 사용하여 데이터베이스와의 상호작용을 테스트
