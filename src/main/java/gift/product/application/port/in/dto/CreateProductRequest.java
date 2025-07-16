@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 
 import static gift.common.validation.ValidationMessages.*;
 
-public record ProductRequest(
+public record CreateProductRequest(
         @NotBlank(message = NOT_BLANK_MESSAGE)
         @Size(max = 15, message = NAME_SIZE_MESSAGE)
         @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s()\\[\\]+&/_-]*$", message = NAME_PATTERN_MESSAGE)
@@ -17,7 +17,7 @@ public record ProductRequest(
 
         String imageUrl
 ) {
-        public static ProductRequest of(String name, int price, String imageUrl) {
-                return new ProductRequest(name, price, imageUrl);
+        public static CreateProductRequest of(String name, int price, String imageUrl) {
+                return new CreateProductRequest(name, price, imageUrl);
         }
 }

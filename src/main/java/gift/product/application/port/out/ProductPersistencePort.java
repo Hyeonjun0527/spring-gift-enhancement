@@ -1,14 +1,14 @@
 package gift.product.application.port.out;
 
-import gift.common.pagination.Page;
-import gift.common.pagination.Pageable;
 import gift.product.domain.model.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
 public interface ProductPersistencePort {
 
-    Page<Product> findPage(Pageable pageable);
+    Page<Product> findAll(Pageable pageable);
 
     Optional<Product> findById(Long id);
 

@@ -1,65 +1,57 @@
 package gift.product.application.usecase;
 
-import gift.common.annotation.UseCase;
-import gift.common.pagination.Page;
-import gift.common.pagination.Pageable;
-import gift.product.adapter.web.mapper.ProductMapper;
 import gift.product.application.port.in.ProductUseCase;
-import gift.product.application.port.in.dto.ProductRequest;
-import gift.product.application.port.in.dto.ProductResponse;
+import gift.product.application.port.in.dto.CreateProductRequest;
+import gift.product.application.port.in.dto.UpdateProductRequest;
 import gift.product.application.port.out.ProductPersistencePort;
 import gift.product.domain.model.Product;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
-
-@UseCase
-@Transactional
+@Service
 public class ProductInteractor implements ProductUseCase {
-
     private final ProductPersistencePort productPersistencePort;
-    private final ProductMapper productMapper;
 
-    public ProductInteractor(ProductPersistencePort productPersistencePort, ProductMapper productMapper) {
+    public ProductInteractor(ProductPersistencePort productPersistencePort) {
         this.productPersistencePort = productPersistencePort;
-        this.productMapper = productMapper;
     }
 
     @Override
-    public ProductResponse addProduct(ProductRequest request) {
-        Product product = productMapper.toEntity(request);
-        Product savedProduct = productPersistencePort.save(product);
-        return productMapper.toResponse(savedProduct);
+    public Page<Product> getProducts(Pageable pageable) {
+        return productPersistencePort.findAll(pageable);
     }
 
-    @Transactional(readOnly = true)
     @Override
-    public ProductResponse getProduct(Long id) {
+    public Product getProduct(Long id) {
         return productPersistencePort.findById(id)
-                .map(productMapper::toResponse)
-                .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다. id: " + id));
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Page<ProductResponse> getProducts(Pageable pageable) {
-        Page<Product> productPage = productPersistencePort.findPage(pageable);
-        return productPage.map(productMapper::toResponse);
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
     }
 
     @Override
-    public void updateProduct(Long id, ProductRequest request) {
-        if (!productPersistencePort.existsById(id)) {
-            throw new NoSuchElementException("업데이트할 상품을 찾을 수 없습니다. id: " + id);
-        }
-        Product product = productMapper.toEntity(id, request);
-        productPersistencePort.save(product);
+    public Product addProduct(CreateProductRequest request) {
+        Product product = Product.of(null, request.name(), request.price(), request.imageUrl());
+        return productPersistencePort.save(product);
+    }
+
+    @Override
+    public void updateProduct(Long id, UpdateProductRequest request) {
+        Product existingProduct = productPersistencePort.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
+
+        Product updatedProduct = Product.of(
+                id,
+                request.name() != null ? request.name() : existingProduct.getName(),
+                request.price() != null ? request.price() : existingProduct.getPrice(),
+                request.imageUrl() != null ? request.imageUrl() : existingProduct.getImageUrl()
+        );
+        productPersistencePort.save(updatedProduct);
     }
 
     @Override
     public void deleteProduct(Long id) {
         if (!productPersistencePort.existsById(id)) {
-            throw new NoSuchElementException("삭제할 상품을 찾을 수 없습니다. id: " + id);
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id);
         }
         productPersistencePort.deleteById(id);
     }

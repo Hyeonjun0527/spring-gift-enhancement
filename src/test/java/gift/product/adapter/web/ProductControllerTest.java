@@ -1,16 +1,19 @@
 package gift.product.adapter.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gift.common.pagination.Page;
-import gift.common.pagination.PageImpl;
-import gift.common.pagination.Pageable;
 import gift.product.application.port.in.ProductUseCase;
-import gift.product.application.port.in.dto.ProductRequest;
+import gift.product.application.port.in.dto.CreateProductRequest;
 import gift.product.application.port.in.dto.ProductResponse;
+import gift.product.application.port.in.dto.UpdateProductRequest;
+import gift.product.domain.model.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -42,12 +45,12 @@ class ProductControllerTest {
     @DisplayName("페이지 상품 조회")
     void getAllProducts() throws Exception {
         // given
-        ProductResponse product1 = new ProductResponse(1L, "상품1", 1000, "image1.jpg");
-        ProductResponse product2 = new ProductResponse(2L, "상품2", 2000, "image2.jpg");
+        Product product1 = Product.of(1L, "상품1", 1000, "image1.jpg");
+        Product product2 = Product.of(2L, "상품2", 2000, "image2.jpg");
         
-        Page<ProductResponse> productPage = new PageImpl<>(
+        Page<Product> productPage = new PageImpl<>(
             List.of(product1, product2), 
-            Pageable.of(0, 20), 
+            PageRequest.of(0, 20),
             1000
         );
         given(productUseCase.getProducts(any(Pageable.class))).willReturn(productPage);
@@ -76,8 +79,8 @@ class ProductControllerTest {
     void getProductById() throws Exception {
         // given
         Long productId = 1L;
-        ProductResponse productResponse = new ProductResponse(productId, "Test Product", 100, "test.jpg");
-        given(productUseCase.getProduct(productId)).willReturn(productResponse);
+        Product product = Product.of(productId, "Test Product", 100, "test.jpg");
+        given(productUseCase.getProduct(productId)).willReturn(product);
 
         // when
         MockHttpServletResponse response = mockMvc.perform(get("/api/products/{id}", productId))
@@ -95,9 +98,8 @@ class ProductControllerTest {
     @DisplayName("상품 추가")
     void addProduct() throws Exception {
         // given
-        ProductRequest request = new ProductRequest("New Product", 100, "new.jpg");
-        ProductResponse responseDto = new ProductResponse(1L, "New Product", 100, "new.jpg");
-        given(productUseCase.addProduct(any(ProductRequest.class))).willReturn(responseDto);
+        Product request = Product.of(1L,"New Product", 100,"new.jpg");
+        given(productUseCase.addProduct(any(CreateProductRequest.class))).willReturn(request);
 
         // when
         MockHttpServletResponse response = mockMvc.perform(post("/api/products")
@@ -117,19 +119,19 @@ class ProductControllerTest {
     void updateProduct() throws Exception {
         // given
         Long productId = 1L;
-        ProductRequest request = new ProductRequest("Updated Product", 150, "updated.jpg");
+        Product product = Product.of(productId,"Updated Product", 150, "updated.jpg");
 
         // when
         MockHttpServletResponse response = mockMvc.perform(put("/api/products/{id}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(product)))
                 .andDo(print())
                 .andReturn()
                 .getResponse();
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
-        verify(productUseCase).updateProduct(productId, request);
+        verify(productUseCase).updateProduct(productId, new UpdateProductRequest(product.getName(), product.getPrice(), product.getImageUrl()));
     }
 
     @Test
