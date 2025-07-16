@@ -1,4 +1,4 @@
-package gift.product.application.port.out;
+package gift.product.domain.port.out;
 
 import gift.product.domain.model.Product;
 import org.springframework.data.domain.Page;
@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
-public interface ProductPersistencePort {
+public interface ProductRepository {
 
     Page<Product> findAll(Pageable pageable);
 

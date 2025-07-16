@@ -3,7 +3,7 @@ package gift.product.adapter.persistence.mapper;
 import gift.product.adapter.persistence.entity.ProductEntity;
 import gift.product.domain.model.Product;
 
-public class ProductPersistenceMapper {
+public class ProductEntityMapper {
 
     public static Product toDomain(ProductEntity entity) {
         if (entity == null) {

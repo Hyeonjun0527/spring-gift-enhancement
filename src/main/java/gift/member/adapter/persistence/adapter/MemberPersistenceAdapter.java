@@ -1,6 +1,6 @@
 package gift.member.adapter.persistence.adapter;
 
-import gift.member.adapter.persistence.mapper.MemberPersistenceMapper;
+import gift.member.adapter.persistence.mapper.MemberEntityMapper;
 import gift.member.adapter.persistence.repository.MemberJpaRepository;
 import gift.member.domain.model.Member;
 import gift.member.domain.port.out.MemberRepository;
@@ -21,20 +21,20 @@ public class MemberPersistenceAdapter implements MemberRepository {
 
     @Override
     public Member save(Member member) {
-        var entity = memberJpaRepository.save(MemberPersistenceMapper.toEntity(member));
-        return MemberPersistenceMapper.toDomain(entity);
+        var entity = memberJpaRepository.save(MemberEntityMapper.toEntity(member));
+        return MemberEntityMapper.toDomain(entity);
     }
 
     @Override
     public Optional<Member> findByEmail(String email) {
         return memberJpaRepository.findByEmail(email)
-                .map(MemberPersistenceMapper::toDomain);
+                .map(MemberEntityMapper::toDomain);
     }
 
     @Override
     public Optional<Member> findById(Long id) {
         return memberJpaRepository.findById(id)
-                .map(MemberPersistenceMapper::toDomain);
+                .map(MemberEntityMapper::toDomain);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class MemberPersistenceAdapter implements MemberRepository {
     @Override
     public List<Member> findAll() {
         return memberJpaRepository.findAll().stream()
-                .map(MemberPersistenceMapper::toDomain)
+                .map(MemberEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
