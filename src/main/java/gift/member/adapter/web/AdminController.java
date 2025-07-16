@@ -1,10 +1,12 @@
 package gift.member.adapter.web;
 
 import gift.common.annotation.RequireAdmin;
+import gift.member.adapter.web.mapper.MemberWebMapper;
 import gift.member.application.port.in.MemberUseCase;
 import gift.member.application.port.in.dto.CreateMemberRequest;
 import gift.member.application.port.in.dto.MemberResponse;
 import gift.member.application.port.in.dto.UpdateMemberRequest;
+import gift.member.domain.model.Member;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,20 +27,23 @@ public class AdminController {
     @RequireAdmin
     @GetMapping("/members")
     public ResponseEntity<List<MemberResponse>> getAllMembers() {
-        List<MemberResponse> members = memberUseCase.getAllMembers();
-        return ResponseEntity.ok(members);
+        List<Member> members = memberUseCase.getAllMembers();
+        List<MemberResponse> memberResponses = members.stream()
+                .map(MemberWebMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(memberResponses);
     }
 
     @RequireAdmin
     @PostMapping("/members")
     public ResponseEntity<Void> createMember(@Valid @RequestBody CreateMemberRequest request) {
-        MemberResponse memberResponse = memberUseCase.createMember(request);
-        return ResponseEntity.created(URI.create("/api/admin/members/" + memberResponse.id())).build();
+        Member member = memberUseCase.createMember(request);
+        return ResponseEntity.created(URI.create("/api/admin/members/" + member.id())).build();
     }
 
     @RequireAdmin
     @PutMapping("/members/{id}")
-    public ResponseEntity<Void> updateMember(@PathVariable Long id, 
+    public ResponseEntity<Void> updateMember(@PathVariable Long id,
                                            @Valid @RequestBody UpdateMemberRequest request) {
         memberUseCase.updateMember(id, request);
         return ResponseEntity.noContent().build();

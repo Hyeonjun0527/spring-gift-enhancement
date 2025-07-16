@@ -3,8 +3,8 @@ package gift.wish.application.usecase;
 import gift.common.exception.UnauthorizedException;
 import gift.common.pagination.Page;
 import gift.common.pagination.Pageable;
-import gift.member.application.port.out.MemberPersistencePort;
 import gift.member.domain.model.Member;
+import gift.member.domain.port.out.MemberRepository;
 import gift.product.application.port.out.ProductPersistencePort;
 import gift.product.domain.model.Product;
 import gift.wish.adapter.web.mapper.WishMapper;
@@ -21,12 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class WishInteractor implements WishUseCase {
 
     private final WishPersistencePort wishPersistencePort;
-    private final MemberPersistencePort memberPersistencePort;
+    private final MemberRepository memberRepository;
     private final ProductPersistencePort productPersistencePort;
 
-    public WishInteractor(WishPersistencePort wishPersistencePort, MemberPersistencePort memberPersistencePort, ProductPersistencePort productPersistencePort) {
+    public WishInteractor(WishPersistencePort wishPersistencePort, MemberRepository memberRepository, ProductPersistencePort productPersistencePort) {
         this.wishPersistencePort = wishPersistencePort;
-        this.memberPersistencePort = memberPersistencePort;
+        this.memberRepository = memberRepository;
         this.productPersistencePort = productPersistencePort;
     }
 
@@ -45,7 +45,7 @@ public class WishInteractor implements WishUseCase {
                     return WishMapper.toResponse(wishPersistencePort.save(existingWish));
                 })
                 .orElseGet(() -> {
-                    Member member = memberPersistencePort.findById(memberId)
+                    Member member = memberRepository.findById(memberId)
                             .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
                     Product product = productPersistencePort.findById(request.productId())
                             .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
