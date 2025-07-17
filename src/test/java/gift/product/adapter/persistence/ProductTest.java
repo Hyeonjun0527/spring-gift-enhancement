@@ -1,7 +1,7 @@
 package gift.product.adapter.persistence;
 
-import gift.product.application.port.in.dto.ProductRequest;
 import gift.product.application.port.in.dto.ProductResponse;
+import gift.product.domain.model.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DirtiesContext
 public class ProductTest {
 
+    private static final long ID = 1;
     private static final String NAME = "프로덕트";
     private static final int PRICE = 100;
     private static final String IMAGE_URL = "https://test.com/img.jpg";
@@ -43,7 +44,7 @@ public class ProductTest {
     @DisplayName("유효한 상품 정보를 등록하면 CREATED 상태코드와 Location 헤더를 반환한다")
     void CREATE() {
         // given
-        ProductRequest productRequest = ProductRequest.of(NAME, PRICE, IMAGE_URL);
+        Product productRequest = Product.of(ID,NAME, PRICE, IMAGE_URL);
 
         // when
         ResponseEntity<Void> response = restClient.post()
@@ -61,7 +62,7 @@ public class ProductTest {
     @DisplayName("ID로 상품을 조회하면 상품 정보를 반환한다")
     void READ() {
         // given
-        URI location = createProduct(NAME, PRICE, IMAGE_URL);
+        URI location = createProduct();
 
         // when
         ProductResponse response = restClient.get()
@@ -79,8 +80,8 @@ public class ProductTest {
     @DisplayName("존재하는 상품을 수정하면 NO_CONTENT 상태코드를 반환하고 정보가 변경된다")
     void UPDATE() {
         // given
-        URI location = createProduct(NAME, PRICE, IMAGE_URL);
-        ProductRequest updateRequest = ProductRequest.of("수정된 프로덕트", 2000, "https://new.img.url");
+        URI location = createProduct();
+        Product updateRequest = Product.of(ID,"수정된 프로덕트", 2000, "https://new.img.url");
 
         // when
         ResponseEntity<Void> response = restClient.put()
@@ -100,7 +101,7 @@ public class ProductTest {
     @DisplayName("존재하는 상품을 삭제하면 NO_CONTENT 상태코드를 반환하고 조회가 불가능하다")
     void DELETE() {
         // given
-        URI location = createProduct(NAME, PRICE, IMAGE_URL);
+        URI location = createProduct();
 
         // when
         ResponseEntity<Void> response = restClient.delete()
@@ -118,8 +119,8 @@ public class ProductTest {
                 .isInstanceOf(HttpClientErrorException.NotFound.class);
     }
 
-    private URI createProduct(String name, int price, String imageUrl) {
-        ProductRequest productRequest = ProductRequest.of(name, price, imageUrl);
+    private URI createProduct() {
+        Product productRequest = Product.of(ID, ProductTest.NAME, ProductTest.PRICE, ProductTest.IMAGE_URL);
         ResponseEntity<Void> response = restClient.post()
                 .uri("/api/products")
                 .body(productRequest)

@@ -1,10 +1,13 @@
 package gift.member.adapter.persistence.entity;
 
 import gift.member.domain.model.Role;
+import gift.wish.adapter.persistence.entity.WishEntity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -27,6 +30,9 @@ public class MemberEntity {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WishEntity> wishes = new ArrayList<>();
 
     protected MemberEntity() {
     }
@@ -57,5 +63,19 @@ public class MemberEntity {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public List<WishEntity> getWishes() {
+        return wishes;
+    }
+
+    public void addWish(WishEntity wish) {
+        wishes.add(wish);
+        wish.setMember(this);
+    }
+
+    public void removeWish(WishEntity wish) {
+        wishes.remove(wish);
+        wish.setMember(null);
     }
 } 

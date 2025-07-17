@@ -1,6 +1,10 @@
 package gift.product.adapter.persistence.entity;
 
+import gift.wish.adapter.persistence.entity.WishEntity;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "product")
@@ -18,6 +22,9 @@ public class ProductEntity {
 
     @Column(nullable = false, length = 255)
     private String imageUrl;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<WishEntity> wishes = new ArrayList<>();
 
     protected ProductEntity() {
     }
@@ -43,5 +50,19 @@ public class ProductEntity {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public List<WishEntity> getWishes() {
+        return wishes;
+    }
+
+    public void addWish(WishEntity wish) {
+        wishes.add(wish);
+        wish.setProduct(this);
+    }
+
+    public void removeWish(WishEntity wish) {
+        wishes.remove(wish);
+        wish.setProduct(null);
     }
 } 

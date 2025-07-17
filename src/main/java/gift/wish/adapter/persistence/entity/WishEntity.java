@@ -4,6 +4,8 @@ import gift.member.adapter.persistence.entity.MemberEntity;
 import gift.product.adapter.persistence.entity.ProductEntity;
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "wish")
 public class WishEntity {
@@ -37,11 +39,27 @@ public class WishEntity {
 
     public MemberEntity getMember() { return member; }
 
-    public void setMember(MemberEntity member) { this.member = member; }
+    public void setMember(MemberEntity member) {
+        if (Objects.nonNull(this.member)) {
+            this.member.getWishes().remove(this);
+        }
+        this.member = member;
+        if (Objects.nonNull(member)) {
+            member.getWishes().add(this);
+        }
+    }
 
     public ProductEntity getProduct() { return product; }
 
-    public void setProduct(ProductEntity product) { this.product = product; }
+    public void setProduct(ProductEntity product) {
+        if (Objects.nonNull(this.product)) {
+            this.product.getWishes().remove(this);
+        }
+        this.product = product;
+        if (Objects.nonNull(product)) {
+            product.getWishes().add(this);
+        }
+    }
 
     public int getQuantity() { return quantity; }
 
