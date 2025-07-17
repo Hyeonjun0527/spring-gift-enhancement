@@ -116,7 +116,7 @@ public class ProductTest {
                         .uri(location)
                         .retrieve()
                         .toBodilessEntity())
-                .isInstanceOf(HttpClientErrorException.NotFound.class);
+                .isInstanceOf(HttpClientErrorException.BadRequest.class);
     }
 
     private URI createProduct() {
