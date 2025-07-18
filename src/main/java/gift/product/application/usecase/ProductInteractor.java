@@ -42,22 +42,6 @@ public class ProductInteractor implements ProductUseCase {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
 
-        Product updatedProduct = getUpdatedProduct(id, request, existingProduct);
-        productRepository.save(updatedProduct);
-    }
-
-    private Product getUpdatedProduct(Long id, UpdateProductRequest request, Product existingProduct) {
-        UpdatedProduct result = getUpdatedNullSafeProduct(request, existingProduct);
-
-        return Product.of(
-                id,
-                result.name(),
-                result.price(),
-                result.imageUrl()
-        );
-    }
-
-    private UpdatedProduct getUpdatedNullSafeProduct(UpdateProductRequest request, Product existingProduct) {
         String name = existingProduct.getName();
         int price = existingProduct.getPrice();
         String imageUrl = existingProduct.getImageUrl();
@@ -72,7 +56,10 @@ public class ProductInteractor implements ProductUseCase {
         if (request.imageUrl() != null) {
             imageUrl = request.imageUrl();
         }
-        return new UpdatedProduct(name, price, imageUrl);
+
+        Product updatedProduct = Product.of(id, name, price, imageUrl);
+
+        productRepository.save(updatedProduct);
     }
 
     private record UpdatedProduct(String name, int price, String imageUrl) {
