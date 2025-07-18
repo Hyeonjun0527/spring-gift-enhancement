@@ -62,9 +62,6 @@ public class ProductInteractor implements ProductUseCase {
         productRepository.save(updatedProduct);
     }
 
-    private record UpdatedProduct(String name, int price, String imageUrl) {
-    }
-
     @Override
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
