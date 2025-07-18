@@ -69,13 +69,4 @@ public class MemberEntity {
         return wishes;
     }
 
-    public void addWish(WishEntity wish) {
-        wishes.add(wish);
-        wish.setMember(this);
-    }
-
-    public void removeWish(WishEntity wish) {
-        wishes.remove(wish);
-        wish.setMember(null);
-    }
-} 
+}

@@ -18,8 +18,7 @@ public class WishEntityMapper {
 
     public static WishEntity toEntity(Wish domain) {
         if (domain == null) return null;
-        return new WishEntity(
-                domain.getId(),
+        return WishEntity.create(
                 MemberEntityMapper.toEntity(domain.getMember()),
                 ProductEntityMapper.toEntity(domain.getProduct()),
                 domain.getQuantity()

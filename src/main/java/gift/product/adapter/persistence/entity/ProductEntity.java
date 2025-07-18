@@ -29,11 +29,15 @@ public class ProductEntity {
     protected ProductEntity() {
     }
 
-    public ProductEntity(Long id, String name, int price, String imageUrl) {
+    private ProductEntity(Long id, String name, int price, String imageUrl) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
+    }
+
+    public static ProductEntity of(String name, int price, String imageUrl) {
+        return new ProductEntity(null, name, price, imageUrl);
     }
 
     public Long getId() {
@@ -54,15 +58,5 @@ public class ProductEntity {
 
     public List<WishEntity> getWishes() {
         return wishes;
-    }
-
-    public void addWish(WishEntity wish) {
-        wishes.add(wish);
-        wish.setProduct(this);
-    }
-
-    public void removeWish(WishEntity wish) {
-        wishes.remove(wish);
-        wish.setProduct(null);
     }
 } 
