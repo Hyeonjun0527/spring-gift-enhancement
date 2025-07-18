@@ -36,16 +36,46 @@ public class ProductInteractor implements ProductUseCase {
 
     @Override
     public void updateProduct(Long id, UpdateProductRequest request) {
+
+        if (request == null) throw new IllegalArgumentException("수정 명렁 정보가 없습니다.");
+
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
 
-        Product updatedProduct = Product.of(
-                id,
-                request.name() != null ? request.name() : existingProduct.getName(),
-                request.price() != null ? request.price() : existingProduct.getPrice(),
-                request.imageUrl() != null ? request.imageUrl() : existingProduct.getImageUrl()
-        );
+        Product updatedProduct = getUpdatedProduct(id, request, existingProduct);
         productRepository.save(updatedProduct);
+    }
+
+    private Product getUpdatedProduct(Long id, UpdateProductRequest request, Product existingProduct) {
+        UpdatedProduct result = getUpdatedNullSafeProduct(request, existingProduct);
+
+        return Product.of(
+                id,
+                result.name(),
+                result.price(),
+                result.imageUrl()
+        );
+    }
+
+    private UpdatedProduct getUpdatedNullSafeProduct(UpdateProductRequest request, Product existingProduct) {
+        String name = existingProduct.getName();
+        int price = existingProduct.getPrice();
+        String imageUrl = existingProduct.getImageUrl();
+
+        if (request.name() != null) {
+            name = request.name();
+        }
+        if (request.price() != null) {
+            price = request.price();
+        }
+
+        if (request.imageUrl() != null) {
+            imageUrl = request.imageUrl();
+        }
+        return new UpdatedProduct(name, price, imageUrl);
+    }
+
+    private record UpdatedProduct(String name, int price, String imageUrl) {
     }
 
     @Override

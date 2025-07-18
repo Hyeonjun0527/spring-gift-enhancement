@@ -11,7 +11,7 @@ public interface MemberUseCase {
     AuthResponse login(LoginRequest request);
     List<Member> getAllMembers();
     Member createMember(CreateMemberRequest request);
-    Member updateMember(Long id, UpdateMemberRequest request);
+    void updateMember(Long id, UpdateMemberRequest request);
     void deleteMember(Long id);
     Member getMemberById(Long memberId);
 } 

@@ -72,7 +72,7 @@ public class MemberInteractor implements MemberUseCase {
     }
 
     @Override
-    public Member updateMember(Long id, UpdateMemberRequest request) {
+    public void updateMember(Long id, UpdateMemberRequest request) {
         Member existingMember = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
@@ -87,7 +87,7 @@ public class MemberInteractor implements MemberUseCase {
                 existingMember.createdAt()
         );
 
-        return memberRepository.save(updatedMember);
+        memberRepository.save(updatedMember);
     }
 
     @Override

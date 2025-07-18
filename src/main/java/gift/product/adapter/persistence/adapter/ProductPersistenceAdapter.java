@@ -1,16 +1,17 @@
 package gift.product.adapter.persistence.adapter;
 
+import gift.common.annotation.Adapter;
+import gift.product.adapter.persistence.entity.ProductEntity;
 import gift.product.adapter.persistence.mapper.ProductEntityMapper;
 import gift.product.adapter.persistence.repository.ProductJpaRepository;
 import gift.product.domain.model.Product;
 import gift.product.domain.port.out.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Component
+@Adapter
 public class ProductPersistenceAdapter implements ProductRepository {
 
     private final ProductJpaRepository productJpaRepository;
@@ -33,9 +34,9 @@ public class ProductPersistenceAdapter implements ProductRepository {
 
     @Override
     public Product save(Product product) {
-        var entity = ProductEntityMapper.toEntity(product);
-        var savedEntity = productJpaRepository.save(entity);
-        return ProductEntityMapper.toDomain(savedEntity);
+        ProductEntity entity = ProductEntityMapper.toEntity(product);
+        ProductEntity save = productJpaRepository.save(entity);
+        return ProductEntityMapper.toDomain(save);
     }
 
     @Override
