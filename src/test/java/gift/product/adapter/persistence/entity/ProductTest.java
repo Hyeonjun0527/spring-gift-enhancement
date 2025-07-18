@@ -1,4 +1,4 @@
-package gift.product.adapter.persistence;
+package gift.product.adapter.persistence.entity;
 
 import gift.product.application.port.in.dto.CreateProductRequest;
 import gift.product.application.port.in.dto.ProductResponse;
