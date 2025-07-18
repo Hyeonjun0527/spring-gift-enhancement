@@ -21,7 +21,7 @@ public class ProductEntityMapper {
         if (domain == null) {
             return null;
         }
-        return new ProductEntity(
+        return ProductEntity.of(
                 domain.getId(),
                 domain.getName(),
                 domain.getPrice(),

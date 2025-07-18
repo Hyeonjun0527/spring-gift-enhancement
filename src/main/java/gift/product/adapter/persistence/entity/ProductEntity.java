@@ -40,6 +40,10 @@ public class ProductEntity {
         return new ProductEntity(null, name, price, imageUrl);
     }
 
+    public static ProductEntity of(Long id, String name, int price, String imageUrl) {
+        return new ProductEntity(id, name, price, imageUrl);
+    }
+
     public Long getId() {
         return id;
     }

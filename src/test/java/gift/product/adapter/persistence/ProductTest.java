@@ -1,7 +1,8 @@
 package gift.product.adapter.persistence;
 
+import gift.product.application.port.in.dto.CreateProductRequest;
 import gift.product.application.port.in.dto.ProductResponse;
-import gift.product.domain.model.Product;
+import gift.product.application.port.in.dto.UpdateProductRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ public class ProductTest {
     @DisplayName("유효한 상품 정보를 등록하면 CREATED 상태코드와 Location 헤더를 반환한다")
     void CREATE() {
         // given
-        Product productRequest = Product.of(ID,NAME, PRICE, IMAGE_URL);
+        CreateProductRequest productRequest = CreateProductRequest.of(NAME, PRICE, IMAGE_URL);
 
         // when
         ResponseEntity<Void> response = restClient.post()
@@ -62,7 +63,7 @@ public class ProductTest {
     @DisplayName("ID로 상품을 조회하면 상품 정보를 반환한다")
     void READ() {
         // given
-        URI location = createProduct();
+        URI location = createProductURI();
 
         // when
         ProductResponse response = restClient.get()
@@ -80,8 +81,8 @@ public class ProductTest {
     @DisplayName("존재하는 상품을 수정하면 NO_CONTENT 상태코드를 반환하고 정보가 변경된다")
     void UPDATE() {
         // given
-        URI location = createProduct();
-        Product updateRequest = Product.of(ID,"수정된 프로덕트", 2000, "https://new.img.url");
+        URI location = createProductURI();
+        UpdateProductRequest updateRequest = UpdateProductRequest.of("수정된 프로덕트", 2000, "https://new.img.url");
 
         // when
         ResponseEntity<Void> response = restClient.put()
@@ -101,7 +102,7 @@ public class ProductTest {
     @DisplayName("존재하는 상품을 삭제하면 NO_CONTENT 상태코드를 반환하고 조회가 불가능하다")
     void DELETE() {
         // given
-        URI location = createProduct();
+        URI location = createProductURI();
 
         // when
         ResponseEntity<Void> response = restClient.delete()
@@ -119,8 +120,8 @@ public class ProductTest {
                 .isInstanceOf(HttpClientErrorException.BadRequest.class);
     }
 
-    private URI createProduct() {
-        Product productRequest = Product.of(ID, ProductTest.NAME, ProductTest.PRICE, ProductTest.IMAGE_URL);
+    private URI createProductURI() {
+        CreateProductRequest productRequest = CreateProductRequest.of(ProductTest.NAME, ProductTest.PRICE, ProductTest.IMAGE_URL);
         ResponseEntity<Void> response = restClient.post()
                 .uri("/api/products")
                 .body(productRequest)
