@@ -1,14 +1,16 @@
 package gift.wish.adapter.web;
 
 import gift.common.annotation.LoginMember;
-import gift.common.pagination.Page;
-import gift.common.pagination.Pageable;
 import gift.member.application.port.in.dto.MemberResponse;
+import gift.wish.adapter.web.mapper.WishWebMapper;
 import gift.wish.application.port.in.WishUseCase;
 import gift.wish.application.port.in.dto.WishAddRequest;
 import gift.wish.application.port.in.dto.WishResponse;
 import gift.wish.application.port.in.dto.WishUpdateQuantityRequest;
+import gift.wish.domain.model.Wish;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,13 +28,15 @@ public class WishController {
 
     @GetMapping
     public ResponseEntity<Page<WishResponse>> getWishes(Pageable pageable, @LoginMember MemberResponse member) {
-        Page<WishResponse> wishes = wishUseCase.getWishes(member.id(), pageable);
-        return ResponseEntity.ok(wishes);
+        Page<Wish> wishes = wishUseCase.getWishes(member.id(), pageable);
+        Page<WishResponse> response = wishes.map(WishWebMapper::toResponse);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<WishResponse> addWish(@RequestBody @Valid WishAddRequest request, @LoginMember MemberResponse member) {
-        WishResponse response = wishUseCase.addWish(request, member.id());
+        Wish wish = wishUseCase.addWish(request, member.id());
+        WishResponse response = WishWebMapper.toResponse(wish);
         return ResponseEntity.created(URI.create("/api/wishes/" + response.wishId())).body(response);
     }
 
@@ -40,7 +44,8 @@ public class WishController {
     public ResponseEntity<WishResponse> updateWishQuantity(@PathVariable Long wishId,
                                                            @RequestBody @Valid WishUpdateQuantityRequest request,
                                                            @LoginMember MemberResponse member) {
-        WishResponse response = wishUseCase.updateWishQuantity(wishId, request.quantity(), member.id());
+        Wish wish = wishUseCase.updateWishQuantity(wishId, request.quantity(), member.id());
+        WishResponse response = WishWebMapper.toResponse(wish);
         return ResponseEntity.ok(response);
     }
 

@@ -1,3 +1,8 @@
+
+DROP TABLE IF EXISTS Wish;
+DROP TABLE IF EXISTS Product;
+DROP TABLE IF EXISTS Member;
+
 CREATE TABLE Product(
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -23,3 +28,13 @@ CREATE TABLE Wish (
     FOREIGN KEY (product_id) REFERENCES Product(id),
     UNIQUE (member_id, product_id)
 );
+
+alter table if exists wish
+    add constraint fk_wish_member_id_ref_member_id
+    foreign key (member_id)
+    references member;
+
+alter table if exists wish
+    add constraint fk_wish_product_id_ref_product_id
+    foreign key (product_id)
+    references product;

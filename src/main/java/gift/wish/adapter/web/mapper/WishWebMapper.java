@@ -5,7 +5,7 @@ import gift.wish.domain.model.Wish;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WishMapper {
+public class WishWebMapper {
     private static WishResponse toResponse(Long wishId, ProductInfo productInfo, int quantity) {
         return new WishResponse(wishId, productInfo.id(), productInfo.name(),
                                productInfo.price(), productInfo.imageUrl(), quantity);

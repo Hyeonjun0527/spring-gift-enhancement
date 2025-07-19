@@ -1,66 +1,72 @@
 package gift.product.application.usecase;
 
-import gift.common.annotation.UseCase;
-import gift.common.pagination.Page;
-import gift.common.pagination.Pageable;
-import gift.product.adapter.web.mapper.ProductMapper;
 import gift.product.application.port.in.ProductUseCase;
-import gift.product.application.port.in.dto.ProductRequest;
-import gift.product.application.port.in.dto.ProductResponse;
-import gift.product.application.port.out.ProductPersistencePort;
+import gift.product.application.port.in.dto.CreateProductRequest;
+import gift.product.application.port.in.dto.UpdateProductRequest;
 import gift.product.domain.model.Product;
-import org.springframework.transaction.annotation.Transactional;
+import gift.product.domain.port.out.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
-
-@UseCase
-@Transactional
+@Service
 public class ProductInteractor implements ProductUseCase {
+    private final ProductRepository productRepository;
 
-    private final ProductPersistencePort productPersistencePort;
-    private final ProductMapper productMapper;
-
-    public ProductInteractor(ProductPersistencePort productPersistencePort, ProductMapper productMapper) {
-        this.productPersistencePort = productPersistencePort;
-        this.productMapper = productMapper;
+    public ProductInteractor(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
     @Override
-    public ProductResponse addProduct(ProductRequest request) {
-        Product product = productMapper.toEntity(request);
-        Product savedProduct = productPersistencePort.save(product);
-        return productMapper.toResponse(savedProduct);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public ProductResponse getProduct(Long id) {
-        return productPersistencePort.findById(id)
-                .map(productMapper::toResponse)
-                .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다. id: " + id));
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Page<ProductResponse> getProducts(Pageable pageable) {
-        Page<Product> productPage = productPersistencePort.findPage(pageable);
-        return productPage.map(productMapper::toResponse);
+    public Page<Product> getProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
     @Override
-    public void updateProduct(Long id, ProductRequest request) {
-        if (!productPersistencePort.existsById(id)) {
-            throw new NoSuchElementException("업데이트할 상품을 찾을 수 없습니다. id: " + id);
+    public Product getProduct(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
+    }
+
+    @Override
+    public Product addProduct(CreateProductRequest request) {
+        Product product = Product.of(null, request.name(), request.price(), request.imageUrl());
+        return productRepository.save(product);
+    }
+
+    @Override
+    public void updateProduct(Long id, UpdateProductRequest request) {
+
+        if (request == null) throw new IllegalArgumentException("수정 명렁 정보가 없습니다.");
+
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
+
+        String name = existingProduct.getName();
+        int price = existingProduct.getPrice();
+        String imageUrl = existingProduct.getImageUrl();
+
+        if (request.name() != null) {
+            name = request.name();
         }
-        Product product = productMapper.toEntity(id, request);
-        productPersistencePort.save(product);
+        if (request.price() != null) {
+            price = request.price();
+        }
+
+        if (request.imageUrl() != null) {
+            imageUrl = request.imageUrl();
+        }
+
+        Product updatedProduct = Product.of(id, name, price, imageUrl);
+
+        productRepository.save(updatedProduct);
     }
 
     @Override
     public void deleteProduct(Long id) {
-        if (!productPersistencePort.existsById(id)) {
-            throw new NoSuchElementException("삭제할 상품을 찾을 수 없습니다. id: " + id);
+        if (!productRepository.existsById(id)) {
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id);
         }
-        productPersistencePort.deleteById(id);
+        productRepository.deleteById(id);
     }
 } 

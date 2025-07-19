@@ -3,7 +3,7 @@ package gift.common.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gift.product.adapter.web.ProductController;
 import gift.product.application.port.in.ProductUseCase;
-import gift.product.application.port.in.dto.ProductRequest;
+import gift.product.domain.model.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +31,10 @@ class GlobalExceptionHandlerTest {
     private ProductUseCase productUseCase;
 
     @Test
-    @DisplayName("MethodArgumentNotValidException - 검증 실패")
-    void handleMethodArgumentNotValidException() throws Exception {
+    @DisplayName("NullPointerException - 필수 값 누락")
+    void handleNullPointerException() throws Exception {
         // given
-        ProductRequest invalidRequest = new ProductRequest(null, 0, null);
+        Product invalidRequest = Product.of(1L,"상품", 1, null);
 
         // when
         MockHttpServletResponse response = mockMvc.perform(post("/api/products")
@@ -46,8 +46,8 @@ class GlobalExceptionHandlerTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(response.getContentAsString()).contains("VALIDATION_FAILED");
-        assertThat(response.getContentAsString()).contains("입력하신 정보를 다시 확인해주세요");
+        assertThat(response.getContentAsString()).contains("REQUIRED_VALUE_MISSING");
+        assertThat(response.getContentAsString()).contains("필수 입력값이 누락되었습니다");
         assertThat(response.getContentAsString()).contains("/api/products");
     }
 } 
