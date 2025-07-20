@@ -3,9 +3,15 @@ package gift.wish.adapter.persistence.entity;
 import gift.member.adapter.persistence.entity.MemberEntity;
 import gift.product.adapter.persistence.entity.ProductEntity;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "wish")
+@Table(
+        name = "wish",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "product_id"})
+)
 public class WishEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +28,11 @@ public class WishEntity {
     @Column(nullable = false)
     private int quantity;
 
-    protected WishEntity() {
-    }
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    protected WishEntity() {}
 
     private WishEntity(Long id, MemberEntity member, ProductEntity product, int quantity) {
         this.id = id;
@@ -32,13 +41,12 @@ public class WishEntity {
         this.quantity = quantity;
     }
 
-    public static WishEntity create(MemberEntity member,
-                                    ProductEntity product,
-                                    int quantity) {
-        WishEntity wish = new WishEntity(null, null, null, quantity);
-        wish.changeMember(member);
-        wish.changeProduct(product);
-        return wish;
+    public static WishEntity create(MemberEntity member, ProductEntity product, int quantity) {
+        return new WishEntity(null, member, product, quantity);
+    }
+
+    public static WishEntity of(Long id, MemberEntity member, ProductEntity product, int quantity) {
+        return new WishEntity(id, member, product, quantity);
     }
 
     public Long getId() {
