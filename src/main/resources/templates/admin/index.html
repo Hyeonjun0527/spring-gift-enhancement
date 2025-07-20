@@ -59,7 +59,19 @@
                 <button id="clear-form-button" style="background-color: #6c757d;" type="button">취소</button>
             </form>
         </div>
-        <div id="product-list"></div>
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th data-sort="id">ID</th>
+                    <th data-sort="name">상품명</th>
+                    <th data-sort="price">가격</th>
+                    <th>이미지</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="product-list-body">
+            </tbody>
+        </table>
         <div class="pagination" id="product-pagination"></div>
     </div>
     <div class="section">

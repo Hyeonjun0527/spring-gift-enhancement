@@ -1,6 +1,7 @@
 package gift.product.application.usecase;
 
 import gift.product.application.port.in.ProductUseCase;
+import gift.product.application.port.in.dto.AdminUpdateProductRequest;
 import gift.product.application.port.in.dto.CreateProductRequest;
 import gift.product.application.port.in.dto.UpdateProductRequest;
 import gift.product.domain.model.Product;
@@ -39,26 +40,30 @@ public class ProductInteractor implements ProductUseCase {
 
         if (request == null) throw new IllegalArgumentException("수정 명렁 정보가 없습니다.");
 
+        updateProductInternal(id, request.name(), request.price(), request.imageUrl());
+    }
+
+    @Override
+    public void updateProductForAdmin(Long id, AdminUpdateProductRequest request) {
+        if (id == null) {
+            throw new IllegalArgumentException("상품 ID가 없습니다.");
+        }
+        if (request == null) {
+            throw new IllegalArgumentException("업데이트 요청 정보가 없습니다.");
+        }
+        updateProductInternal(id, request.name(), request.price(), request.imageUrl());
+    }
+
+    private void updateProductInternal(Long id, String name, Integer price, String imageUrl) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
 
-        String name = existingProduct.getName();
-        int price = existingProduct.getPrice();
-        String imageUrl = existingProduct.getImageUrl();
-
-        if (request.name() != null) {
-            name = request.name();
-        }
-        if (request.price() != null) {
-            price = request.price();
-        }
-
-        if (request.imageUrl() != null) {
-            imageUrl = request.imageUrl();
-        }
-
-        Product updatedProduct = Product.of(id, name, price, imageUrl);
-
+        Product updatedProduct = Product.of(
+                id,
+                name != null ? name : existingProduct.getName(),
+                price != null ? price : existingProduct.getPrice(),
+                imageUrl != null ? imageUrl : existingProduct.getImageUrl()
+        );
         productRepository.save(updatedProduct);
     }
 

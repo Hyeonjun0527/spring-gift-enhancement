@@ -62,3 +62,56 @@ h1 {
     font-size: 24px;
     cursor: pointer;
 }
+
+/* 정렬 기능 스타일 */
+th[data-sort] {
+    cursor: pointer;
+    position: relative;
+    padding-right: 20px; /* 아이콘을 위한 공간 확보 */
+}
+
+th[data-sort]::after {
+    content: '';
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 4px solid transparent;
+    opacity: 0.3;
+}
+
+th[data-sort].sorted-asc::after {
+    border-bottom-color: #333;
+    opacity: 1;
+}
+
+th[data-sort].sorted-desc::after {
+    border-top-color: #333;
+    opacity: 1;
+}
+
+/* 페이지네이션 버튼 스타일 개선 */
+#pagination-controls button {
+    margin: 0 2px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    cursor: pointer;
+}
+
+#pagination-controls button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+#pagination-controls button.current {
+    font-weight: bold;
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+#pagination-controls span {
+    margin: 0 5px;
+    color: #888;
+}

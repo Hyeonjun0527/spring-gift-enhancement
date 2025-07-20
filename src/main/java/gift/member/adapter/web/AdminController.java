@@ -7,6 +7,8 @@ import gift.member.application.port.in.dto.CreateMemberRequest;
 import gift.member.application.port.in.dto.MemberResponse;
 import gift.member.application.port.in.dto.UpdateMemberRequest;
 import gift.member.domain.model.Member;
+import gift.product.application.port.in.ProductUseCase;
+import gift.product.application.port.in.dto.AdminUpdateProductRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +21,11 @@ import java.util.List;
 public class AdminController {
 
     private final MemberUseCase memberUseCase;
+    private final ProductUseCase productUseCase;
 
-    public AdminController(MemberUseCase memberUseCase) {
+    public AdminController(MemberUseCase memberUseCase, ProductUseCase productUseCase) {
         this.memberUseCase = memberUseCase;
+        this.productUseCase = productUseCase;
     }
 
     @RequireAdmin
@@ -53,6 +57,14 @@ public class AdminController {
     @DeleteMapping("/members/{id}")
     public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
         memberUseCase.deleteMember(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @RequireAdmin
+    @PutMapping("/products/{id}")
+    public ResponseEntity<Void> updateProduct(@PathVariable Long id,
+                                              @Valid @RequestBody AdminUpdateProductRequest request) {
+        productUseCase.updateProductForAdmin(id, request);
         return ResponseEntity.noContent().build();
     }
 } 
