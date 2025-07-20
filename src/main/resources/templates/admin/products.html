@@ -13,9 +13,9 @@
     <table id="product-table">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>이름</th>
-                <th>가격</th>
+                <th data-sort="id">ID</th>
+                <th data-sort="name">상품명</th>
+                <th data-sort="price">가격</th>
                 <th>이미지</th>
                 <th>관리</th>
             </tr>
@@ -45,7 +45,7 @@
                     <label for="imageUrl">이미지 URL</label>
                     <input id="imageUrl" name="imageUrl" required type="text">
                 </div>
-                <button type="submit">저장</button>
+                <button id="submit-button" type="submit">저장</button>
             </form>
         </div>
     </div>

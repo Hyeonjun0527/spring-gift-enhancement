@@ -6,10 +6,19 @@ const ui = {
     nameInput: null,
     priceInput: null,
     imageUrlInput: null,
+    submitButton: null,
     tableBody: null,
     paginationControls: null,
     addProductBtn: null,
     closeModalBtn: null,
+    tableHeader: null,
+};
+
+const state = {
+    currentPage: 0,
+    pageSize: 5,
+    sortBy: 'id',
+    order: 'asc',
 };
 
 const openModal = () => ui.productModal.style.display = 'block';
@@ -24,10 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ui.nameInput = document.getElementById('name');
     ui.priceInput = document.getElementById('price');
     ui.imageUrlInput = document.getElementById('imageUrl');
+    ui.submitButton = document.getElementById('submit-button');
     ui.tableBody = document.querySelector("#product-table tbody");
     ui.paginationControls = document.getElementById('pagination-controls');
     ui.addProductBtn = document.getElementById('add-product-btn');
     ui.closeModalBtn = document.querySelector('.close-button');
+    ui.tableHeader = document.querySelector("#product-table thead");
 
     ui.addProductBtn.addEventListener('click', setupAddModal);
     ui.closeModalBtn.addEventListener('click', closeModal);
@@ -40,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ui.productForm.addEventListener('submit', handleFormSubmit);
     ui.tableBody.addEventListener('click', handleTableClick);
+    ui.tableHeader.addEventListener('click', handleSort);
 
     getProducts();
 });
@@ -78,6 +90,7 @@ function setupAddModal() {
     ui.productForm.reset();
     ui.modalTitle.textContent = '새 상품 추가';
     ui.productIdField.value = '';
+    ui.submitButton.textContent = '저장';
     openModal();
 }
 
@@ -87,16 +100,22 @@ function setupEditModal(product) {
     ui.nameInput.value = product.name;
     ui.priceInput.value = product.price;
     ui.imageUrlInput.value = product.imageUrl;
+    ui.submitButton.textContent = '수정';
     openModal();
 }
 
 
-function getProducts(page = 0, size = 5) {
-    axios.get(`/api/products?page=${page}&size=${size}`)
+function getProducts(page = state.currentPage) {
+    state.currentPage = page;
+    const { pageSize, sortBy, order } = state; // 'sort' -> 'sortBy'
+    const sortParam = `${sortBy},${order}`; // 'sort' -> 'sortBy'
+
+    axios.get(`/api/products?page=${state.currentPage}&size=${pageSize}&sort=${sortParam}`)
         .then(response => {
             const pageData = response.data;
             renderTable(pageData.content);
             renderPagination(pageData);
+            updateSortIndicator();
         })
         .catch(error => {
             handleApiError(error, '상품 목록을 불러오는 데 실패했습니다.');
@@ -126,42 +145,49 @@ function renderTable(products) {
 
 function renderPagination(pageData) {
     ui.paginationControls.innerHTML = '';
+    const totalPages = pageData.totalPages;
+    const currentPage = pageData.number;
 
-    if (pageData.totalPages === 0) return;
+    if (totalPages === 0) return;
 
-    if (pageData.totalPages === 1) {
-        const pageButton = document.createElement('button');
-        pageButton.innerText = '1';
-        pageButton.classList.add('current');
-        ui.paginationControls.appendChild(pageButton);
-        return;
-    }
-
-    const currentPageNumber = pageData.number;
-
-    if (pageData.hasPrevious) {
-        const prevButton = document.createElement('button');
-        prevButton.innerText = '이전';
-        prevButton.onclick = () => getProducts(currentPageNumber - 1);
-        ui.paginationControls.appendChild(prevButton);
-    }
-
-    for (let i = 0; i < pageData.totalPages; i++) {
-        const pageButton = document.createElement('button');
-        pageButton.innerText = i + 1;
-        if (i === currentPageNumber) {
-            pageButton.classList.add('current');
+    const createButton = (text, page, enabled = true, isCurrent = false) => {
+        const button = document.createElement('button');
+        button.innerText = text;
+        button.disabled = !enabled;
+        if (isCurrent) {
+            button.classList.add('current');
         }
-        pageButton.onclick = () => getProducts(i);
-        ui.paginationControls.appendChild(pageButton);
+        button.onclick = () => getProducts(page);
+        return button;
+    };
+
+    ui.paginationControls.appendChild(createButton('<<', 0, currentPage > 0));
+    ui.paginationControls.appendChild(createButton('<', currentPage - 1, pageData.hasPrevious));
+
+    // 페이지 번호 로직 개선
+    const maxPageButtons = 5;
+    let startPage = Math.max(0, currentPage - Math.floor(maxPageButtons / 2));
+    let endPage = Math.min(totalPages - 1, startPage + maxPageButtons - 1);
+    startPage = Math.max(0, endPage - maxPageButtons + 1);
+
+    if (startPage > 0) {
+        const dots = document.createElement('span');
+        dots.innerText = '...';
+        ui.paginationControls.appendChild(dots);
     }
 
-    if (pageData.hasNext) {
-        const nextButton = document.createElement('button');
-        nextButton.innerText = '다음';
-        nextButton.onclick = () => getProducts(currentPageNumber + 1);
-        ui.paginationControls.appendChild(nextButton);
+    for (let i = startPage; i <= endPage; i++) {
+        ui.paginationControls.appendChild(createButton(i + 1, i, true, i === currentPage));
     }
+
+    if (endPage < totalPages - 1) {
+        const dots = document.createElement('span');
+        dots.innerText = '...';
+        ui.paginationControls.appendChild(dots);
+    }
+
+    ui.paginationControls.appendChild(createButton('>', currentPage + 1, pageData.hasNext));
+    ui.paginationControls.appendChild(createButton('>>', totalPages - 1, currentPage < totalPages - 1));
 }
 
 function handleApiError(error, defaultMessage) {
@@ -233,4 +259,29 @@ function deleteProduct(id) {
                 handleApiError(error, '상품 삭제에 실패했습니다.');
             });
     }
+}
+
+function handleSort(event) {
+    const target = event.target;
+    if (target.tagName !== 'TH' || !target.dataset.sort) {
+        return;
+    }
+
+    const newSortBy = target.dataset.sort;
+    if (state.sortBy === newSortBy) {
+        state.order = state.order === 'asc' ? 'desc' : 'asc';
+    } else {
+        state.sortBy = newSortBy;
+        state.order = 'asc';
+    }
+    getProducts();
+}
+
+function updateSortIndicator() {
+    ui.tableHeader.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        if (th.dataset.sort === state.sortBy) {
+            th.classList.add(state.order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+        }
+    });
 }

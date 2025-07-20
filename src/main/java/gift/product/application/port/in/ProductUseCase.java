@@ -1,5 +1,6 @@
 package gift.product.application.port.in;
 
+import gift.product.application.port.in.dto.AdminUpdateProductRequest;
 import gift.product.application.port.in.dto.CreateProductRequest;
 import gift.product.application.port.in.dto.UpdateProductRequest;
 import gift.product.domain.model.Product;
@@ -14,6 +15,8 @@ public interface ProductUseCase {
     Product addProduct(CreateProductRequest request);
 
     void updateProduct(Long id, UpdateProductRequest request);
+    
+    void updateProductForAdmin(Long id, AdminUpdateProductRequest request);
 
     void deleteProduct(Long id);
 } 
