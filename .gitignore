@@ -45,3 +45,7 @@ practice/
 ## Local Config ###
 **/application-*-local.yml
 **/application-*.local.yml
+
+## STUDY-*.MD ####
+**/STUDY-*.md
+**/STUDY.md
