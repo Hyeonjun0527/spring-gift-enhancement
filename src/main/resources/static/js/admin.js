@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Authorization': `Bearer ${accessToken}`
     };
 
-    const productList = document.getElementById('product-list');
+    const productListBody = document.getElementById('product-list-body');
     const productPagination = document.getElementById('product-pagination');
     const memberList = document.getElementById('member-list');
     const logoutButton = document.getElementById('logout-button');
@@ -21,13 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const productPriceInput = document.getElementById('product-price');
     const productImageUrlInput = document.getElementById('product-imageUrl');
     const clearFormButton = document.getElementById('clear-form-button');
+    const productTableHeader = document.querySelector("#product-table thead");
 
-
-    let currentProductPage = 0;
+    const state = {
+        currentProductPage: 0,
+        sortBy: 'id',
+        order: 'asc',
+    };
 
     const fetchProducts = async (page = 0) => {
+        state.currentProductPage = page;
+        const { sortBy, order } = state;
+        const sortParam = `${sortBy},${order}`;
+        
         try {
-            const response = await fetch(`/api/products?page=${page}&size=5`, { headers });
+            const response = await fetch(`/api/products?page=${page}&size=5&sort=${sortParam}`, { headers });
             if(response.status === 401) {
                  localStorage.removeItem('accessToken');
                  window.location.href = '/login';
@@ -36,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             renderProducts(data.content);
             renderPagination(productPagination, data, fetchProducts);
-            currentProductPage = page;
+            updateSortIndicator();
         } catch (error) {
             console.error('Error fetching products:', error);
         }
@@ -62,20 +70,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderProducts = (products) => {
-        productList.innerHTML = '';
+        productListBody.innerHTML = '';
         products.forEach(product => {
-            const item = document.createElement('div');
-            item.className = 'product-item';
-            item.innerHTML = `
-                <div>
-                    <strong>${product.name}</strong> - ${product.price}원
-                </div>
-                <div>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>${product.price}</td>
+                <td><img src="${product.imageUrl}" alt="${product.name}" width="80"></td>
+                <td>
                     <button onclick="editProduct(${product.id}, '${product.name}', ${product.price}, '${product.imageUrl}')">수정</button>
                     <button onclick="deleteProduct(${product.id})">삭제</button>
-                </div>
+                </td>
             `;
-            productList.appendChild(item);
+            productListBody.appendChild(row);
         });
     };
     
@@ -131,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 alert('상품이 저장되었습니다.');
                 clearForm();
-                fetchProducts(currentProductPage);
+                fetchProducts(state.currentProductPage);
             } else {
                 alert('저장 실패');
             }
@@ -163,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/api/products/${id}`, { method: 'DELETE', headers });
             if (response.ok) {
                 alert('삭제되었습니다.');
-                fetchProducts(currentProductPage);
+                fetchProducts(state.currentProductPage);
             } else {
                 alert('삭제 실패');
             }
@@ -171,12 +179,38 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error deleting product:', error);
         }
     };
+
+    const handleSort = (event) => {
+        const target = event.target;
+        if (target.tagName !== 'TH' || !target.dataset.sort) {
+            return;
+        }
+
+        const newSortBy = target.dataset.sort;
+        if (state.sortBy === newSortBy) {
+            state.order = state.order === 'asc' ? 'desc' : 'asc';
+        } else {
+            state.sortBy = newSortBy;
+            state.order = 'asc';
+        }
+        fetchProducts(0); // 정렬 시 첫 페이지부터 조회
+    };
+
+    const updateSortIndicator = () => {
+        productTableHeader.querySelectorAll('th').forEach(th => {
+            th.classList.remove('sorted-asc', 'sorted-desc');
+            if (th.dataset.sort === state.sortBy) {
+                th.classList.add(state.order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            }
+        });
+    };
     
     logoutButton.addEventListener('click', () => {
         localStorage.removeItem('accessToken');
         window.location.href = '/login';
     });
 
+    productTableHeader.addEventListener('click', handleSort);
     fetchProducts();
     fetchMembers();
 });
