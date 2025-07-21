@@ -2,6 +2,8 @@ package gift.product.application.port.in.dto;
 
 import jakarta.validation.constraints.*;
 
+import java.util.List;
+
 import static gift.common.validation.ValidationMessages.*;
 
 public record CreateProductRequest(
@@ -15,9 +17,12 @@ public record CreateProductRequest(
         @Min(value = 1, message = PRICE_MIN_MESSAGE)
         int price,
 
-        String imageUrl
+        String imageUrl,
+
+        List<OptionRequest> optionRequests
 ) {
-        public static CreateProductRequest of(String name, int price, String imageUrl) {
-                return new CreateProductRequest(name, price, imageUrl);
+
+        public static CreateProductRequest of(String name, int price, String imageUrl, List<OptionRequest> optionRequests) {
+                return new CreateProductRequest(name, price, imageUrl, optionRequests);
         }
 }

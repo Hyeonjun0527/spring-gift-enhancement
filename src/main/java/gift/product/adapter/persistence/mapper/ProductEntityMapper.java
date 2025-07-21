@@ -3,6 +3,8 @@ package gift.product.adapter.persistence.mapper;
 import gift.product.adapter.persistence.entity.ProductEntity;
 import gift.product.domain.model.Product;
 
+import java.util.stream.Collectors;
+
 public class ProductEntityMapper {
 
     public static Product toDomain(ProductEntity entity) {
@@ -13,7 +15,10 @@ public class ProductEntityMapper {
                 entity.getId(),
                 entity.getName(),
                 entity.getPrice(),
-                entity.getImageUrl()
+                entity.getImageUrl(),
+                entity.getOptions().stream()
+                    .map(OptionEntityMapper::toDomain)
+                    .collect(Collectors.toList())
         );
     }
 

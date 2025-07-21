@@ -4,13 +4,18 @@ import gift.product.application.port.in.ProductUseCase;
 import gift.product.application.port.in.dto.AdminUpdateProductRequest;
 import gift.product.application.port.in.dto.CreateProductRequest;
 import gift.product.application.port.in.dto.UpdateProductRequest;
+import gift.product.domain.model.Option;
 import gift.product.domain.model.Product;
 import gift.product.domain.port.out.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
+@Transactional
 public class ProductInteractor implements ProductUseCase {
     private final ProductRepository productRepository;
 
@@ -19,11 +24,13 @@ public class ProductInteractor implements ProductUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Product> getProducts(Pageable pageable) {
         return productRepository.findAll(pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Product getProduct(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
@@ -31,7 +38,11 @@ public class ProductInteractor implements ProductUseCase {
 
     @Override
     public Product addProduct(CreateProductRequest request) {
-        Product product = Product.of(null, request.name(), request.price(), request.imageUrl());
+        List<Option> options = request.optionRequests()
+                .stream()
+                .map(req -> Option.create(null,null,req.name(),req.quantity()))
+                .toList();
+        Product product = Product.create(null, request.name(), request.price(), request.imageUrl(),options);
         return productRepository.save(product);
     }
 
@@ -62,7 +73,8 @@ public class ProductInteractor implements ProductUseCase {
                 id,
                 name != null ? name : existingProduct.getName(),
                 price != null ? price : existingProduct.getPrice(),
-                imageUrl != null ? imageUrl : existingProduct.getImageUrl()
+                imageUrl != null ? imageUrl : existingProduct.getImageUrl(),
+                existingProduct.getOptions()
         );
         productRepository.save(updatedProduct);
     }

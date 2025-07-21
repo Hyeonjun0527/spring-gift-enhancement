@@ -3,6 +3,7 @@ package gift.common.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gift.product.adapter.web.ProductController;
 import gift.product.application.port.in.ProductUseCase;
+import gift.product.domain.model.Option;
 import gift.product.domain.model.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,7 +37,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("NullPointerException - 필수 값 누락")
     void handleNullPointerException() throws Exception {
         // given
-        Product invalidRequest = Product.of(1L,"상품", 1, null);
+        Product invalidRequest = Product.create(1L,"상품", 1, null, List.of(Option.of(1L,1L,"옵션",1)));
 
         // when
         MockHttpServletResponse response = mockMvc.perform(post("/api/products")

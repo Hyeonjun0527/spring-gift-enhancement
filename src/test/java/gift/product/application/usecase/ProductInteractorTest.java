@@ -1,7 +1,9 @@
 package gift.product.application.usecase;
 
 import gift.product.application.port.in.dto.CreateProductRequest;
+import gift.product.application.port.in.dto.OptionRequest;
 import gift.product.application.port.in.dto.UpdateProductRequest;
+import gift.product.domain.model.Option;
 import gift.product.domain.model.Product;
 import gift.product.domain.port.out.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +38,9 @@ class ProductInteractorTest {
     @Test
     @DisplayName("상품 페이지 조회")
     void getProducts() {
-        Product p1 = Product.of(1L, "A", 100, "a.jpg");
-        Product p2 = Product.of(2L, "B", 200, "b.jpg");
+        Option opt = Option.create(1L, null, "옵션", 10);
+        Product p1 = Product.create(1L, "A", 100, "a.jpg", List.of(opt));
+        Product p2 = Product.create(2L, "B", 200, "b.jpg", List.of(opt));
         Page<Product> page = new PageImpl<>(List.of(p1, p2), PageRequest.of(0, 10), 2);
         given(productRepository.findAll(any(Pageable.class))).willReturn(page);
 
@@ -48,10 +51,11 @@ class ProductInteractorTest {
     @Test
     @DisplayName("ID로 상품 조회 - 성공")
     void getProduct_success() {
-        Product p = Product.of(1L, "A", 100, "a.jpg");
-        given(productRepository.findById(1L)).willReturn(Optional.of(p));
+        Option opt = Option.create(1L, null, "옵션", 10);
+        Product p1 = Product.create(1L, "A", 100, "a.jpg", List.of(opt));
+        given(productRepository.findById(1L)).willReturn(Optional.of(p1));
         Product result = productInteractor.getProduct(1L);
-        assertThat(result).isEqualTo(p);
+        assertThat(result).isEqualTo(p1);
     }
 
     @Test
@@ -66,8 +70,11 @@ class ProductInteractorTest {
     @Test
     @DisplayName("상품 추가")
     void addProduct() {
-        CreateProductRequest req = new CreateProductRequest("A", 100, "a.jpg");
-        Product saved = Product.of(1L, "A", 100, "a.jpg");
+        Option opt = Option.create(null, null, "옵션", 10);
+        CreateProductRequest req = new CreateProductRequest("A", 100, "a.jpg", List.of(
+                new OptionRequest("옵션", 10)
+        ));
+        Product saved = Product.create(1L, "A", 100, "a.jpg", List.of(opt));
         given(productRepository.save(any(Product.class))).willReturn(saved);
         Product result = productInteractor.addProduct(req);
         assertThat(result).isEqualTo(saved);
@@ -86,7 +93,8 @@ class ProductInteractorTest {
     @Test
     @DisplayName("상품 수정 - 일부 필드만 변경")
     void updateProduct_partial() {
-        Product existing = Product.of(1L, "A", 100, "a.jpg");
+        Option opt = Option.create(null, null, "옵션", 10);
+        Product existing = Product.create(1L, "A", 100, "a.jpg", List.of(opt));
         given(productRepository.findById(1L)).willReturn(Optional.of(existing));
         UpdateProductRequest req = new UpdateProductRequest(null, 200, null);
         productInteractor.updateProduct(1L, req);

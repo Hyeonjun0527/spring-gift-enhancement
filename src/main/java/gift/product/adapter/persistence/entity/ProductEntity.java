@@ -26,6 +26,9 @@ public class ProductEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<WishEntity> wishes = new ArrayList<>();
 
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
+    private List<OptionEntity> options = new ArrayList<>();
+
     protected ProductEntity() {
     }
 
@@ -62,5 +65,9 @@ public class ProductEntity {
 
     public List<WishEntity> getWishes() {
         return wishes;
+    }
+
+    public List<OptionEntity> getOptions() {
+        return options;
     }
 } 
