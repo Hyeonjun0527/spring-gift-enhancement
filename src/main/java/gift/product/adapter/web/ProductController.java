@@ -25,9 +25,9 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProducts(Pageable pageable) {
-        Page<Product> productPage = productUseCase.getProducts(pageable);
-        Page<ProductResponse> responsePage = productPage.map(ProductWebMapper::toResponse);
-        return ResponseEntity.ok(responsePage);
+        Page<Product> products = productUseCase.getProducts(pageable);
+        Page<ProductResponse> response = products.map(ProductWebMapper::toResponse);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -37,9 +37,10 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> addProduct(@Valid @RequestBody CreateProductRequest request) {
+    public ResponseEntity<ProductResponse> addProduct(@Valid @RequestBody CreateProductRequest request) {
         Product product = productUseCase.addProduct(request);
-        return ResponseEntity.created(URI.create("/api/products/" + product.getId())).build();
+        ProductResponse response = ProductWebMapper.toResponse(product);
+        return ResponseEntity.created(URI.create("/api/products/" + response.id())).body(response);
     }
 
     @PutMapping("/{id}")

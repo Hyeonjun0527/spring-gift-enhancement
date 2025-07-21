@@ -84,7 +84,7 @@ class ProductInteractorTest {
     @DisplayName("상품 수정 - 존재하지 않으면 예외")
     void updateProduct_fail() {
         given(productRepository.findById(1L)).willReturn(Optional.empty());
-        UpdateProductRequest req = new UpdateProductRequest("B", 200, "b.jpg");
+        UpdateProductRequest req = new UpdateProductRequest("B", 200, "b.jpg", List.of(new OptionRequest("옵션", 1)));
         assertThatThrownBy(() -> productInteractor.updateProduct(1L, req))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("상품을 찾을 수 없습니다");
@@ -93,17 +93,24 @@ class ProductInteractorTest {
     @Test
     @DisplayName("상품 수정 - 일부 필드만 변경")
     void updateProduct_partial() {
-        Option opt = Option.create(null, null, "옵션", 10);
+        Option opt = Option.create(1L, 1L, "옵션", 10);
         Product existing = Product.create(1L, "A", 100, "a.jpg", List.of(opt));
         given(productRepository.findById(1L)).willReturn(Optional.of(existing));
-        UpdateProductRequest req = new UpdateProductRequest(null, 200, null);
+
+        // 이름과 이미지URL은 기존 값을 유지하고, 가격과 옵션 수량만 변경
+        List<OptionRequest> updatedOptions = List.of(new OptionRequest("옵션", 20));
+        UpdateProductRequest req = new UpdateProductRequest("A", 200, "a.jpg", updatedOptions);
+
         productInteractor.updateProduct(1L, req);
+
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
         verify(productRepository).save(captor.capture());
         Product updated = captor.getValue();
+
         assertThat(updated.getName()).isEqualTo("A");
         assertThat(updated.getPrice()).isEqualTo(200);
         assertThat(updated.getImageUrl()).isEqualTo("a.jpg");
+        assertThat(updated.getOptions().get(0).getQuantity()).isEqualTo(20);
     }
 
     @Test

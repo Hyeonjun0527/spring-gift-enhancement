@@ -55,6 +55,14 @@
                     <label for="product-imageUrl">이미지 URL</label>
                     <input id="product-imageUrl" required type="text">
                 </div>
+
+                <hr>
+                <h5 style="margin-top: 10px;">옵션 관리</h5>
+                <div id="options-container">
+                </div>
+                <button id="add-option-btn" style="margin-top: 5px; margin-bottom: 15px; background-color: #6c757d; color: white; border: none; padding: 5px 10px; cursor: pointer;" type="button">옵션 필드 추가</button>
+                <hr>
+
                 <button type="submit">저장</button>
                 <button id="clear-form-button" style="background-color: #6c757d;" type="button">취소</button>
             </form>
@@ -66,6 +74,7 @@
                     <th data-sort="name">상품명</th>
                     <th data-sort="price">가격</th>
                     <th>이미지</th>
+                    <th>옵션</th>
                     <th>관리</th>
                 </tr>
             </thead>

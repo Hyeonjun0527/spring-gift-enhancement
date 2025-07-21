@@ -3,6 +3,7 @@ package gift.product.adapter.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gift.product.application.port.in.ProductUseCase;
 import gift.product.application.port.in.dto.CreateProductRequest;
+import gift.product.application.port.in.dto.OptionRequest;
 import gift.product.application.port.in.dto.ProductResponse;
 import gift.product.application.port.in.dto.UpdateProductRequest;
 import gift.product.domain.model.Option;
@@ -127,19 +128,20 @@ class ProductControllerTest {
     void updateProduct() throws Exception {
         // given
         Long productId = 1L;
-        Product product = Product.create(productId,"Updated Product", 150, "updated.jpg", createMockOp(1L,productId));
+        List<OptionRequest> optionRequests = List.of(new OptionRequest("Updated Option", 150));
+        UpdateProductRequest request = new UpdateProductRequest("Updated Product", 150, "updated.jpg", optionRequests);
 
         // when
         MockHttpServletResponse response = mockMvc.perform(put("/api/products/{id}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(product)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andReturn()
                 .getResponse();
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
-        verify(productUseCase).updateProduct(productId, new UpdateProductRequest(product.getName(), product.getPrice(), product.getImageUrl()));
+        verify(productUseCase).updateProduct(productId, request);
     }
 
     @Test

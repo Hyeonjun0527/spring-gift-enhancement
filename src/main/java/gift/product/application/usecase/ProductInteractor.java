@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -38,45 +39,51 @@ public class ProductInteractor implements ProductUseCase {
 
     @Override
     public Product addProduct(CreateProductRequest request) {
-        List<Option> options = request.optionRequests()
+        List<Option> options = request.optionRequests() // 여기가 optionRequests가 맞습니다.
                 .stream()
-                .map(req -> Option.create(null,null,req.name(),req.quantity()))
+                .map(req -> Option.create(null, null, req.name(), req.quantity()))
                 .toList();
-        Product product = Product.create(null, request.name(), request.price(), request.imageUrl(),options);
+        Product product = Product.create(null, request.name(), request.price(), request.imageUrl(), options);
         return productRepository.save(product);
     }
 
     @Override
     public void updateProduct(Long id, UpdateProductRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
 
-        if (request == null) throw new IllegalArgumentException("수정 명렁 정보가 없습니다.");
+        List<Option> updatedOptions = request.options().stream()
+                .map(optionRequest -> Option.create(
+                        findOptionIdByName(product, optionRequest.name()),
+                        product.getId(),
+                        optionRequest.name(),
+                        optionRequest.quantity()))
+                .collect(Collectors.toList());
 
-        updateProductInternal(id, request.name(), request.price(), request.imageUrl());
+        product.updateInfo(request.name(), request.price(), request.imageUrl(), updatedOptions);
+        productRepository.save(product);
     }
 
     @Override
     public void updateProductForAdmin(Long id, AdminUpdateProductRequest request) {
-        if (id == null) {
-            throw new IllegalArgumentException("상품 ID가 없습니다.");
-        }
-        if (request == null) {
-            throw new IllegalArgumentException("업데이트 요청 정보가 없습니다.");
-        }
-        updateProductInternal(id, request.name(), request.price(), request.imageUrl());
-    }
-
-    private void updateProductInternal(Long id, String name, Integer price, String imageUrl) {
-        Product existingProduct = productRepository.findById(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
 
-        Product updatedProduct = Product.of(
-                id,
-                name != null ? name : existingProduct.getName(),
-                price != null ? price : existingProduct.getPrice(),
-                imageUrl != null ? imageUrl : existingProduct.getImageUrl(),
-                existingProduct.getOptions()
+        product.updateInfo(
+                request.name() != null ? request.name() : product.getName(),
+                request.price() != null ? request.price() : product.getPrice(),
+                request.imageUrl() != null ? request.imageUrl() : product.getImageUrl(),
+                product.getOptions()
         );
-        productRepository.save(updatedProduct);
+        productRepository.save(product);
+    }
+
+    private Long findOptionIdByName(Product product, String name) {
+        return product.getOptions().stream()
+                .filter(option -> option.getName().equals(name))
+                .findFirst()
+                .map(Option::getId)
+                .orElse(null);
     }
 
     @Override

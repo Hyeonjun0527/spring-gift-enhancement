@@ -14,12 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const productPagination = document.getElementById('product-pagination');
     const memberList = document.getElementById('member-list');
     const logoutButton = document.getElementById('logout-button');
-    
+
     const productForm = document.getElementById('product-form');
     const productIdInput = document.getElementById('product-id');
     const productNameInput = document.getElementById('product-name');
     const productPriceInput = document.getElementById('product-price');
     const productImageUrlInput = document.getElementById('product-imageUrl');
+    const optionsContainer = document.getElementById('options-container');
+    const addOptionBtn = document.getElementById('add-option-btn');
+
     const clearFormButton = document.getElementById('clear-form-button');
     const productTableHeader = document.querySelector("#product-table thead");
 
@@ -69,23 +72,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const renderProducts = (products) => {
+    function renderProducts(products) {
         productListBody.innerHTML = '';
         products.forEach(product => {
+            const optionsHtml = product.options.map(opt =>
+                `<li>${opt.name} (${opt.quantity}개)</li>`
+            ).join('');
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${product.id}</td>
                 <td>${product.name}</td>
                 <td>${product.price}</td>
                 <td><img src="${product.imageUrl}" alt="${product.name}" width="80"></td>
+                <td><ul>${optionsHtml}</ul></td>
                 <td>
-                    <button onclick="editProduct(${product.id}, '${product.name}', ${product.price}, '${product.imageUrl}')">수정</button>
+                    <button onclick="editProduct(${product.id})">수정</button>
                     <button onclick="deleteProduct(${product.id})">삭제</button>
                 </td>
             `;
             productListBody.appendChild(row);
         });
-    };
+    }
     
     const renderMembers = (members) => {
         memberList.innerHTML = '';
@@ -125,10 +133,20 @@ document.addEventListener('DOMContentLoaded', () => {
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = productIdInput.value;
+        const options = Array.from(optionsContainer.children).map(field => {
+            const nameInput = field.querySelector('.option-name');
+            const quantityInput = field.querySelector('.option-quantity');
+            return {
+                name: nameInput.value,
+                quantity: parseInt(quantityInput.value, 10)
+            };
+        });
+
         const productData = {
             name: productNameInput.value,
             price: parseInt(productPriceInput.value),
-            imageUrl: productImageUrlInput.value
+            imageUrl: productImageUrlInput.value,
+            options: options // 옵션 데이터 추가
         };
 
         const url = id ? `/api/products/${id}` : '/api/products';
@@ -147,22 +165,65 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error saving product:', error);
         }
     });
-    
+
     const clearForm = () => {
         productIdInput.value = '';
         productNameInput.value = '';
         productPriceInput.value = '';
         productImageUrlInput.value = '';
+        optionsContainer.innerHTML = '';
+        addOptionField();
     }
     
     clearFormButton.addEventListener('click', clearForm);
 
-    window.editProduct = (id, name, price, imageUrl) => {
-        productIdInput.value = id;
-        productNameInput.value = name;
-        productPriceInput.value = price;
-        productImageUrlInput.value = imageUrl;
-        window.scrollTo(0, 0);
+    function addOptionField(option = { name: '', quantity: 1 }) {
+        const optionField = document.createElement('div');
+        optionField.classList.add('option-field');
+        optionField.innerHTML = `
+            <input type="text" class="option-name" placeholder="옵션명" value="${option.name}" required style="width: 60%;">
+            <input type="number" class="option-quantity" placeholder="수량" value="${option.quantity}" min="1" required style="width: 25%;">
+            <button type="button" class="remove-option-btn" style="width: 10%;">삭제</button>
+        `;
+        optionsContainer.appendChild(optionField);
+    }
+
+    addOptionBtn.addEventListener('click', () => addOptionField());
+
+    optionsContainer.addEventListener('click', function(event) {
+        if (event.target.classList.contains('remove-option-btn')) {
+
+            if (optionsContainer.children.length > 1) {
+                event.target.closest('.option-field').remove();
+            } else {
+                alert('상품에는 최소 1개의 옵션이 필요합니다.');
+            }
+        }
+    });
+
+    window.editProduct = async (id) => {
+        try {
+            const response = await fetch(`/api/products/${id}`, { headers });
+            if (!response.ok) throw new Error('상품 정보를 불러오는 데 실패했습니다.');
+            const product = await response.json();
+
+            productIdInput.value = product.id;
+            productNameInput.value = product.name;
+            productPriceInput.value = product.price;
+            productImageUrlInput.value = product.imageUrl;
+
+            optionsContainer.innerHTML = '';
+            if (product.options && product.options.length > 0) {
+                product.options.forEach(option => addOptionField(option));
+            } else {
+                addOptionField();
+            }
+
+            window.scrollTo(0, 0);
+        } catch (error) {
+            console.error('상품 정보 로드 오류:', error);
+            alert(error.message);
+        }
     };
 
     window.deleteProduct = async (id) => {
@@ -171,9 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/api/products/${id}`, { method: 'DELETE', headers });
             if (response.ok) {
                 alert('삭제되었습니다.');
+                clearForm();
                 fetchProducts(state.currentProductPage);
             } else {
-                alert('삭제 실패');
+                const errorData = await response.json();
+                alert('삭제 실패: ' + (errorData.message || '알 수 없는 오류'));
             }
         } catch (error) {
             console.error('Error deleting product:', error);
@@ -213,5 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
     productTableHeader.addEventListener('click', handleSort);
     fetchProducts();
     fetchMembers();
+    addOptionField(); // 페이지 로드 시 기본 옵션 필드 1개 추가
 });
  

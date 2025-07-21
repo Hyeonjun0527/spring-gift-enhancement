@@ -1,6 +1,7 @@
 package gift.product.adapter.persistence.entity;
 
 import gift.product.application.port.in.dto.CreateProductRequest;
+import gift.product.application.port.in.dto.OptionRequest;
 import gift.product.application.port.in.dto.ProductResponse;
 import gift.product.application.port.in.dto.UpdateProductRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +47,8 @@ public class ProductTest {
     @DisplayName("유효한 상품 정보를 등록하면 CREATED 상태코드와 Location 헤더를 반환한다")
     void CREATE() {
         // given
-        CreateProductRequest productRequest = CreateProductRequest.of(NAME, PRICE, IMAGE_URL);
+        List<OptionRequest> options = List.of(new OptionRequest("기본 옵션", 10));
+        CreateProductRequest productRequest = new CreateProductRequest(NAME, PRICE, IMAGE_URL, options);
 
         // when
         ResponseEntity<Void> response = restClient.post()
@@ -82,7 +85,8 @@ public class ProductTest {
     void UPDATE() {
         // given
         URI location = createProductURI();
-        UpdateProductRequest updateRequest = UpdateProductRequest.of("수정된 프로덕트", 2000, "https://new.img.url");
+        List<OptionRequest> updatedOptions = List.of(new OptionRequest("수정된 옵션", 20));
+        UpdateProductRequest updateRequest = new UpdateProductRequest("수정된 프로덕트", 2000, "https://new.img.url", updatedOptions);
 
         // when
         ResponseEntity<Void> response = restClient.put()
@@ -121,7 +125,8 @@ public class ProductTest {
     }
 
     private URI createProductURI() {
-        CreateProductRequest productRequest = CreateProductRequest.of(ProductTest.NAME, ProductTest.PRICE, ProductTest.IMAGE_URL);
+        List<OptionRequest> options = List.of(new OptionRequest("기본 옵션", 10));
+        CreateProductRequest productRequest = new CreateProductRequest(ProductTest.NAME, ProductTest.PRICE, ProductTest.IMAGE_URL, options);
         ResponseEntity<Void> response = restClient.post()
                 .uri("/api/products")
                 .body(productRequest)
