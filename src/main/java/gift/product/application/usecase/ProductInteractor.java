@@ -68,11 +68,9 @@ public class ProductInteractor implements ProductUseCase {
     public void updateProductForAdmin(Long id, AdminUpdateProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id: " + id));
-
-        product.updateInfo(
-                request.name() != null ? request.name() : product.getName(),
-                request.price() != null ? request.price() : product.getPrice(),
-                request.imageUrl() != null ? request.imageUrl() : product.getImageUrl(),
+        product.updateInfo(request.name(),
+                request.price(),
+                request.imageUrl(),
                 product.getOptions()
         );
         productRepository.save(product);
